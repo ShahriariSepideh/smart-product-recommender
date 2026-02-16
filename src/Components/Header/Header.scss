@@ -1,0 +1,14 @@
+.header {
+  // اینجا فقط استایل‌های خیلی خاص رو می‌تونید اضافه کنید
+  // بیشتر استایل‌ها با Tailwind توی JSX هست
+
+  &__search-input {
+    &::placeholder {
+      @apply text-gray-400;
+    }
+
+    &:focus {
+      @apply ring-2 ring-yellow-300;
+    }
+  }
+}
