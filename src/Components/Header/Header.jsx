@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { FaShoppingCart } from 'react-icons/fa';
 
-const Header = ({ onSearch, cartCount = 0 }) => {
+const Header = ({ onSearch, onCategorySelect, cartCount = 0, selectedCategory = 'all' }) => {
     const [searchTerm, setSearchTerm] = useState('');
 
     const handleSearchChange = (e) => {
@@ -9,6 +9,12 @@ const Header = ({ onSearch, cartCount = 0 }) => {
         setSearchTerm(value);
         if (onSearch) {
             onSearch(value);
+        }
+    };
+
+    const handleCategoryClick = (category) => {
+        if (onCategorySelect) {
+            onCategorySelect(category);
         }
     };
 
@@ -31,7 +37,7 @@ const Header = ({ onSearch, cartCount = 0 }) => {
                     </button>
                 </div>
 
-                {/* سرچ باکس - با عرض محدود و وسط‌چین */}
+                {/* سرچ باکس */}
                 <div className="flex justify-center mb-6">
                     <div className="relative w-full md:w-2/3 lg:w-1/2">
                         <input
@@ -57,20 +63,68 @@ const Header = ({ onSearch, cartCount = 0 }) => {
                     </div>
                 </div>
 
-                {/* دسته‌بندی‌های سریع */}
+                {/* دسته‌بندی‌های سریع - با قابلیت انتخاب */}
                 <div className="flex flex-wrap justify-center gap-4 md:gap-6 text-sm md:text-base">
-                    <span className="cursor-pointer hover:text-yellow-300 transition-colors px-3 py-1 rounded-full hover:bg-blue-700">
+                    <button
+                        onClick={() => handleCategoryClick('all')}
+                        className={`cursor-pointer transition-all px-4 py-2 rounded-full ${
+                            selectedCategory === 'all'
+                                ? 'bg-yellow-500 text-blue-900 font-bold shadow-lg scale-110'
+                                : 'hover:bg-blue-700 hover:text-yellow-300'
+                        }`}
+                    >
+                        All Products
+                    </button>
+                    <button
+                        onClick={() => handleCategoryClick('iphone')}
+                        className={`cursor-pointer transition-all px-4 py-2 rounded-full ${
+                            selectedCategory === 'iphone'
+                                ? 'bg-yellow-500 text-blue-900 font-bold shadow-lg scale-110'
+                                : 'hover:bg-blue-700 hover:text-yellow-300'
+                        }`}
+                    >
                         iPhone
-                    </span>
-                    <span className="cursor-pointer hover:text-yellow-300 transition-colors px-3 py-1 rounded-full hover:bg-blue-700">
+                    </button>
+                    <button
+                        onClick={() => handleCategoryClick('samsung')}
+                        className={`cursor-pointer transition-all px-4 py-2 rounded-full ${
+                            selectedCategory === 'samsung'
+                                ? 'bg-yellow-500 text-blue-900 font-bold shadow-lg scale-110'
+                                : 'hover:bg-blue-700 hover:text-yellow-300'
+                        }`}
+                    >
                         Samsung
-                    </span>
-                    <span className="cursor-pointer hover:text-yellow-300 transition-colors px-3 py-1 rounded-full hover:bg-blue-700">
+                    </button>
+                    <button
+                        onClick={() => handleCategoryClick('xiaomi')}
+                        className={`cursor-pointer transition-all px-4 py-2 rounded-full ${
+                            selectedCategory === 'xiaomi'
+                                ? 'bg-yellow-500 text-blue-900 font-bold shadow-lg scale-110'
+                                : 'hover:bg-blue-700 hover:text-yellow-300'
+                        }`}
+                    >
                         Xiaomi
-                    </span>
-                    <span className="cursor-pointer hover:text-yellow-300 transition-colors px-3 py-1 rounded-full hover:bg-blue-700">
-                        Accessories
-                    </span>
+                    </button>
+                    <button
+                        onClick={() => handleCategoryClick('google')}
+                        className={`cursor-pointer transition-all px-4 py-2 rounded-full ${
+                            selectedCategory === 'google'
+                                ? 'bg-yellow-500 text-blue-900 font-bold shadow-lg scale-110'
+                                : 'hover:bg-blue-700 hover:text-yellow-300'
+                        }`}
+                    >
+                        Google
+                    </button>
+                    <button
+                        onClick={() => handleCategoryClick('huawei')}
+                        className={`cursor-pointer transition-all px-4 py-2 rounded-full ${
+                            selectedCategory === 'huawei'
+                                ? 'bg-yellow-500 text-blue-900 font-bold shadow-lg scale-110'
+                                : 'hover:bg-blue-700 hover:text-yellow-300'
+                        }`}
+                    >
+                        Huawei
+                    </button>
                 </div>
             </div>
         </header>
