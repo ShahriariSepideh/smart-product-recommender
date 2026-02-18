@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Link } from 'react-router-dom';
 import './Product-List.scss';
 
 const ProductList = ({ products, currentPage, totalPages, totalProducts, onPageChange }) => {
@@ -12,24 +13,10 @@ const ProductList = ({ products, currentPage, totalPages, totalProducts, onPageC
         );
     }
 
-    // نقشه رنگها
-    const colorMap = {
-        purple: '#9333ea',
-        blue: '#2563eb',
-        gold: '#ca8a04',
-        red: '#dc2626',
-        black: '#1f2937',
-        white: '#f3f4f6',
-        silver: '#9ca3af',
-        green: '#16a34a',
-    };
-
-    // تصویر پیش‌فرض وقتی عکس لود نمیشه
     const handleImageError = (productId) => {
         setImageErrors(prev => ({ ...prev, [productId]: true }));
     };
 
-    // تولید شماره صفحات
     const getPageNumbers = () => {
         const pageNumbers = [];
         const maxPagesToShow = 5;
@@ -55,7 +42,6 @@ const ProductList = ({ products, currentPage, totalPages, totalProducts, onPageC
                 pageNumbers.push(totalPages);
             }
         }
-
         return pageNumbers;
     };
 
@@ -69,46 +55,44 @@ const ProductList = ({ products, currentPage, totalPages, totalProducts, onPageC
 
             <div className="product-list__grid">
                 {products.map(product => (
-                    <div key={product.id} className="product-card">
-                        {/* بخش عکس محصول */}
-                        <div className="product-card__image-container">
-                            {!imageErrors[product.id] ? (
-                                <img
-                                    src={product.image}
-                                    alt={product.title}
-                                    className="product-card__image"
-                                    onError={() => handleImageError(product.id)}
-                                    loading="lazy"
-                                />
-                            ) : (
-                                <div className="product-card__image-placeholder">
-                                    <span>📱</span>
-                                </div>
-                            )}
+                    <Link
+                        to={`/product/${product.id}`}
+                        key={product.id}
+                        className="product-card-link"
+                        style={{ textDecoration: 'none' }}
+                    >
+                        <div className="product-card">
+                            <div className="product-card__image-container">
+                                {!imageErrors[product.id] ? (
+                                    <img
+                                        src={product.image}
+                                        alt={product.title}
+                                        className="product-card__image"
+                                        onError={() => handleImageError(product.id)}
+                                        loading="lazy"
+                                    />
+                                ) : (
+                                    <div className="product-card__image-placeholder">
+                                        <span>📱</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            <h3 className="product-card__title">{product.title}</h3>
+                            <p className="product-card__price">${product.price}</p>
+
+                            <button
+                                className="product-card__button"
+                                onClick={(e) => {
+                                    e.preventDefault(); // جلوگیری از رفتن به لینک
+                                    // اینجا می‌تونی تابع اضافه به سبد خرید رو صدا بزنی
+                                    console.log('Add to cart:', product.id);
+                                }}
+                            >
+                                Add to Cart
+                            </button>
                         </div>
-
-                        <h3 className="product-card__title">{product.title}</h3>
-                        <p className="product-card__price">${product.price}</p>
-
-                        <div className="product-card__color">
-                            <span>Color: </span>
-                            <span
-                                className="product-card__color-dot"
-                                style={{ backgroundColor: colorMap[product.color] || '#6b7280' }}
-                            />
-                            <span className="product-card__color-name">{product.color}</span>
-                        </div>
-
-                        <p className="product-card__os">OS: {product.os}</p>
-
-                        <p className={`product-card__stock ${product.inStock ? 'in-stock' : 'out-of-stock'}`}>
-                            {product.inStock ? 'In Stock' : 'Out of Stock'}
-                        </p>
-
-                        <button className="product-card__button">
-                            Add to Cart
-                        </button>
-                    </div>
+                    </Link>
                 ))}
             </div>
 
