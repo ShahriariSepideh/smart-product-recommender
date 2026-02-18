@@ -85,7 +85,6 @@ const ProductList = ({ products, currentPage, totalPages, totalProducts, onPageC
                                 className="product-card__button"
                                 onClick={(e) => {
                                     e.preventDefault(); // جلوگیری از رفتن به لینک
-                                    // اینجا می‌تونی تابع اضافه به سبد خرید رو صدا بزنی
                                     console.log('Add to cart:', product.id);
                                 }}
                             >

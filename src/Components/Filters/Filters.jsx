@@ -71,7 +71,7 @@ const Filters = ({
                         className={`price-filter__sort-btn ${sortBy === 'price-desc' ? 'price-filter__sort-btn--active' : ''}`}
                         onClick={() => handleSortChange('price-desc')}
                     >
-                        <span>💎</span> Most Expensive First
+                        <span></span> Most Expensive First
                     </button>
                 </div>
             </div>

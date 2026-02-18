@@ -49,7 +49,6 @@ const Header = ({ onSearch, onCategorySelect, cartCount = 0, selectedCategory = 
                     </button>
                 </div>
 
-                {/* سرچ باکس - با رنگ جدید و برجسته */}
                 <div className="flex justify-center mb-6">
                     <div className="relative w-full md:w-2/3 lg:w-1/2">
                         <input
@@ -96,7 +95,7 @@ const Header = ({ onSearch, onCategorySelect, cartCount = 0, selectedCategory = 
                                     : 'hover:bg-blue-700 hover:text-yellow-300'
                             }`}
                         >
-                            👔 Men's Clothing
+                            Men's Clothing
                         </button>
                         <button
                             onClick={() => handleCategoryClick("women's clothing")}
@@ -106,7 +105,7 @@ const Header = ({ onSearch, onCategorySelect, cartCount = 0, selectedCategory = 
                                     : 'hover:bg-blue-700 hover:text-yellow-300'
                             }`}
                         >
-                            👗 Women's Clothing
+                             Women's Clothing
                         </button>
                         <button
                             onClick={() => handleCategoryClick('electronics')}
@@ -116,7 +115,7 @@ const Header = ({ onSearch, onCategorySelect, cartCount = 0, selectedCategory = 
                                     : 'hover:bg-blue-700 hover:text-yellow-300'
                             }`}
                         >
-                            💻 Electronics
+                             Electronics
                         </button>
                         <button
                             onClick={() => handleCategoryClick('jewelery')}
@@ -126,7 +125,7 @@ const Header = ({ onSearch, onCategorySelect, cartCount = 0, selectedCategory = 
                                     : 'hover:bg-blue-700 hover:text-yellow-300'
                             }`}
                         >
-                            💍 Jewelery
+                             Jewelery
                         </button>
                     </div>
                 )}
