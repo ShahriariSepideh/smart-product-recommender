@@ -1,268 +1,142 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import { Routes, Route } from 'react-router-dom';
 import Header from './components/header/Header';
-import PriceFilter from './Components/Price-Filter/Price-Filter';
-import ProductList from "./Components/Product-List/Product-List.jsx";
+import Filters from './components/Filters/Filters';
+import ProductList from './components/Product-List/Product-List';
+import ProductDetails from './components/Product-Details/Product-Details';
+import { getProducts } from "./Services/api.js";
+import { saveToStorage, loadFromStorage } from './utils/storage';
+import { debounce } from './utils/debounce';
+import './App.css';
 
 function App() {
     const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('all'); // state  برای دسته‌بندی
-    const [filters, setFilters] = useState({
-        priceRange: { min: 0, max: 2000 },
-        colors: [],
-        os: [],
-        inStock: false
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+    const [selectedCategory, setSelectedCategory] = useState('all');
+    const [filters, setFilters] = useState(() => {
+        // بارگذاری فیلترها از localStorage
+        return loadFromStorage('filters', {
+            priceRange: { min: 0, max: 1000 },
+            inStock: false
+        });
     });
-    const [sortBy, setSortBy] = useState('default');
-    const [cartCount, setCartCount] = useState(3);
+    const [sortBy, setSortBy] = useState(() => {
+        return loadFromStorage('sortBy', 'default');
+    });
+    const [cartCount, setCartCount] = useState(() => {
+        return loadFromStorage('cartCount', 0);
+    });
+    const [cartItems, setCartItems] = useState(() => {
+        return loadFromStorage('cartItems', []);
+    });
     const [currentPage, setCurrentPage] = useState(1);
+    const [products, setProducts] = useState(() => {
+        // بارگذاری محصولات از localStorage
+        return loadFromStorage('products', []);
+    });
+    const [loading, setLoading] = useState(products.length === 0);
+    const [error, setError] = useState(null);
     const productsPerPage = 9;
 
+    // تابع debounce برای جستجو
+    const debouncedSearch = useCallback(
+        debounce((term) => {
+            setDebouncedSearchTerm(term);
+            setCurrentPage(1);
+        }, 500),
+        []
+    );
 
-    const products = [
-        // Apple Products
-        {
-            id: 1,
-            title: 'iPhone 14 Pro',
-            price: 999,
-            color: 'purple',
-            os: 'ios',
-            inStock: true,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+14+Pro'
-        },
-        {
-            id: 2,
-            title: 'iPhone 14',
-            price: 799,
-            color: 'blue',
-            os: 'ios',
-            inStock: true,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+14'
-        },
-        {
-            id: 3,
-            title: 'iPhone 13 Pro Max',
-            price: 1099,
-            color: 'gold',
-            os: 'ios',
-            inStock: false,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+13+Pro+Max'
-        },
-        {
-            id: 4,
-            title: 'iPhone 13',
-            price: 699,
-            color: 'red',
-            os: 'ios',
-            inStock: true,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+13'
-        },
-        {
-            id: 5,
-            title: 'iPhone SE',
-            price: 429,
-            color: 'black',
-            os: 'ios',
-            inStock: true,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+SE'
-        },
-        {
-            id: 6,
-            title: 'iPhone 12',
-            price: 599,
-            color: 'white',
-            os: 'ios',
-            inStock: true,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+12'
-        },
-        {
-            id: 7,
-            title: 'iPhone 11',
-            price: 499,
-            color: 'purple',
-            os: 'ios',
-            inStock: false,
-            category: 'iphone',
-            image: 'https://via.placeholder.com/400x400/000000/ffffff?text=iPhone+11'
-        },
-        // Samsung Products
-        {
-            id: 8,
-            title: 'Samsung Galaxy S23 Ultra',
-            price: 1199,
-            color: 'black',
-            os: 'android',
-            inStock: true,
-            category: 'samsung',
-            image: 'https://via.placeholder.com/400x400/1428A0/ffffff?text=S23+Ultra'
-        },
-        {
-            id: 9,
-            title: 'Samsung Galaxy S23+',
-            price: 999,
-            color: 'green',
-            os: 'android',
-            inStock: true,
-            category: 'samsung',
-            image: 'https://via.placeholder.com/400x400/1428A0/ffffff?text=S23%2B'
-        },
-        {
-            id: 10,
-            title: 'Samsung Galaxy S23',
-            price: 799,
-            color: 'purple',
-            os: 'android',
-            inStock: false,
-            category: 'samsung',
-            image: 'https://via.placeholder.com/400x400/1428A0/ffffff?text=S23'
-        },
-        {
-            id: 11,
-            title: 'Samsung Galaxy Z Fold5',
-            price: 1799,
-            color: 'blue',
-            os: 'android',
-            inStock: true,
-            category: 'samsung',
-            image: 'https://via.placeholder.com/400x400/1428A0/ffffff?text=Z+Fold5'
-        },
-        {
-            id: 12,
-            title: 'Samsung Galaxy Z Flip5',
-            price: 999,
-            color: 'gold',
-            os: 'android',
-            inStock: true,
-            category: 'samsung',
-            image: 'https://via.placeholder.com/400x400/1428A0/ffffff?text=Z+Flip5'
-        },
-        // Xiaomi Products
-        {
-            id: 13,
-            title: 'Xiaomi 13 Pro',
-            price: 899,
-            color: 'blue',
-            os: 'android',
-            inStock: true,
-            category: 'xiaomi',
-            image: 'https://via.placeholder.com/400x400/FF6900/ffffff?text=Xiaomi+13+Pro'
-        },
-        {
-            id: 14,
-            title: 'Xiaomi 13',
-            price: 699,
-            color: 'green',
-            os: 'android',
-            inStock: true,
-            category: 'xiaomi',
-            image: 'https://via.placeholder.com/400x400/FF6900/ffffff?text=Xiaomi+13'
-        },
-        {
-            id: 15,
-            title: 'Xiaomi 12T',
-            price: 549,
-            color: 'black',
-            os: 'android',
-            inStock: false,
-            category: 'xiaomi',
-            image: 'https://via.placeholder.com/400x400/FF6900/ffffff?text=Xiaomi+12T'
-        },
-        // Google Products
-        {
-            id: 16,
-            title: 'Google Pixel 7 Pro',
-            price: 899,
-            color: 'white',
-            os: 'android',
-            inStock: true,
-            category: 'google',
-            image: 'https://via.placeholder.com/400x400/4285F4/ffffff?text=Pixel+7+Pro'
-        },
-        {
-            id: 17,
-            title: 'Google Pixel 7',
-            price: 599,
-            color: 'black',
-            os: 'android',
-            inStock: true,
-            category: 'google',
-            image: 'https://via.placeholder.com/400x400/4285F4/ffffff?text=Pixel+7'
-        },
-        // Huawei Products
-        {
-            id: 18,
-            title: 'Huawei P60 Pro',
-            price: 999,
-            color: 'green',
-            os: 'harmony',
-            inStock: false,
-            category: 'huawei',
-            image: 'https://via.placeholder.com/400x400/FF0000/ffffff?text=P60+Pro'
-        },
-        {
-            id: 19,
-            title: 'Huawei Mate 50 Pro',
-            price: 899,
-            color: 'black',
-            os: 'harmony',
-            inStock: true,
-            category: 'huawei',
-            image: 'https://via.placeholder.com/400x400/FF0000/ffffff?text=Mate+50'
-        },
-    ];
-
-    // تابع سورت کردن محصولات
-    const getSortedProducts = (productsToSort) => {
-        if (sortBy === 'price-asc') {
-            return [...productsToSort].sort((a, b) => a.price - b.price);
-        } else if (sortBy === 'price-desc') {
-            return [...productsToSort].sort((a, b) => b.price - a.price);
-        }
-        return productsToSort;
+    const handleSearch = (term) => {
+        setSearchTerm(term);
+        debouncedSearch(term);
     };
 
-    // فیلتر محصولات
-    const filteredProducts = products.filter(product => {
-        // فیلتر دسته‌بندی
-        if (selectedCategory !== 'all' && product.category !== selectedCategory) return false;
+    // دریافت محصولات از API (اگه تو localStorage نباشه)
+    useEffect(() => {
+        const fetchProducts = async () => {
+            if (products.length > 0) {
+                setLoading(false);
+                return;
+            }
 
-        // فیلتر قیمت
-        if (product.price < filters.priceRange.min || product.price > filters.priceRange.max) return false;
+            try {
+                setLoading(true);
+                const data = await getProducts();
 
-        // فیلتر رنگ
-        if (filters.colors.length > 0 && !filters.colors.includes(product.color)) return false;
+                const formattedProducts = data.map(product => ({
+                    id: product.id,
+                    title: product.title,
+                    price: product.price,
+                    category: product.category,
+                    image: product.image,
+                    description: product.description,
+                    inStock: Math.random() > 0.3,
+                }));
 
-        // فیلتر سیستم عامل
-        if (filters.os.length > 0 && !filters.os.includes(product.os)) return false;
+                setProducts(formattedProducts);
+                saveToStorage('products', formattedProducts);
+                setError(null);
+            } catch (err) {
+                setError('Error fetching products');
+                console.error(err);
+            } finally {
+                setLoading(false);
+            }
+        };
 
-        // فیلتر موجودی
-        if (filters.inStock && !product.inStock) return false;
+        fetchProducts();
+    }, [products.length]);
 
-        // فیلتر جستجو
-        if (searchTerm && !product.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    // ذخیره فیلترها در localStorage
+    useEffect(() => {
+        saveToStorage('filters', filters);
+    }, [filters]);
 
-        return true;
-    });
+    // ذخیره sortBy در localStorage
+    useEffect(() => {
+        saveToStorage('sortBy', sortBy);
+    }, [sortBy]);
 
-    // اعمال سورت روی محصولات فیلتر شده
-    const sortedProducts = getSortedProducts(filteredProducts);
+    // ذخیره سبد خرید در localStorage
+    useEffect(() => {
+        saveToStorage('cartItems', cartItems);
+        saveToStorage('cartCount', cartCount);
+    }, [cartItems, cartCount]);
 
-    // محاسبات pagination
+    // فیلتر محصولات (با استفاده از debouncedSearchTerm)
+    const filteredProducts = useMemo(() => {
+        return products.filter(product => {
+            // فیلتر دسته‌بندی
+            if (selectedCategory !== 'all' && product.category !== selectedCategory) return false;
+
+            // فیلتر قیمت
+            if (product.price < filters.priceRange.min || product.price > filters.priceRange.max) return false;
+
+            // فیلتر موجودی
+            if (filters.inStock && !product.inStock) return false;
+
+            // فیلتر جستجو (با debounced term)
+            if (debouncedSearchTerm && !product.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())) return false;
+
+            return true;
+        });
+    }, [products, selectedCategory, filters, debouncedSearchTerm]);
+
+    // مرتب‌سازی محصولات
+    const sortedProducts = useMemo(() => {
+        return [...filteredProducts].sort((a, b) => {
+            if (sortBy === 'price-asc') return a.price - b.price;
+            if (sortBy === 'price-desc') return b.price - a.price;
+            return 0;
+        });
+    }, [filteredProducts, sortBy]);
+
+    // صفحه‌بندی
     const totalPages = Math.ceil(sortedProducts.length / productsPerPage);
     const indexOfLastProduct = currentPage * productsPerPage;
     const indexOfFirstProduct = indexOfLastProduct - productsPerPage;
     const currentProducts = sortedProducts.slice(indexOfFirstProduct, indexOfLastProduct);
-
-    // Handler functions
-    const handleSearch = (term) => {
-        setSearchTerm(term);
-        setCurrentPage(1);
-    };
 
     const handleCategorySelect = (category) => {
         setSelectedCategory(category);
@@ -271,16 +145,6 @@ function App() {
 
     const handlePriceChange = (range) => {
         setFilters(prev => ({ ...prev, priceRange: range }));
-        setCurrentPage(1);
-    };
-
-    const handleColorChange = (colors) => {
-        setFilters(prev => ({ ...prev, colors }));
-        setCurrentPage(1);
-    };
-
-    const handleOsChange = (os) => {
-        setFilters(prev => ({ ...prev, os }));
         setCurrentPage(1);
     };
 
@@ -294,44 +158,91 @@ function App() {
         setCurrentPage(1);
     };
 
+    const handleAddToCart = (product) => {
+        setCartItems(prev => [...prev, product]);
+        setCartCount(prev => prev + 1);
+        alert(`${product.title} added to cart!`);
+    };
+
+    // نمایش لودینگ
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+                    <p className="mt-4 text-gray-600">Loading products...</p>
+                </div>
+            </div>
+        );
+    }
+
+    // نمایش خطا
+    if (error) {
+        return (
+            <div className="min-h-screen bg-gray-100 flex items-center justify-center">
+                <div className="text-center text-red-600">
+                    <p className="text-xl">{error}</p>
+                    <button
+                        onClick={() => window.location.reload()}
+                        className="mt-4 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                    >
+                        Try Again
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-100">
-            <Header
-                onSearch={handleSearch}
-                onCategorySelect={handleCategorySelect}
-                selectedCategory={selectedCategory}
-                cartCount={cartCount}
-            />
-
-            <main className="container mx-auto max-w-7xl px-4 py-8">
-                <div className="flex flex-col lg:flex-row gap-8">
-                    <aside className="lg:w-1/4">
-                        <div className="sticky top-4">
-                            <PriceFilter
-                                onPriceChange={handlePriceChange}
-                                onColorChange={handleColorChange}
-                                onOsChange={handleOsChange}
-                                onAvailabilityChange={handleAvailabilityChange}
-                                onSortChange={handleSortChange}
-                                minPrice={0}
-                                maxPrice={2000}
-                            />
-                        </div>
-                    </aside>
-
-                    <div className="lg:w-3/4">
-                        <ProductList
-                            products={currentProducts}
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            totalProducts={sortedProducts.length}
-                            onPageChange={setCurrentPage}
-                            sortBy={sortBy}
+        <Routes>
+            <Route path="/" element={
+                <div className="min-h-screen bg-gray-100">
+                    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                        <Header
+                            onSearch={handleSearch}
+                            onCategorySelect={handleCategorySelect}
+                            selectedCategory={selectedCategory}
+                            cartCount={cartCount}
+                            showCategories={true}
                         />
                     </div>
+
+                    <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                        <div className="flex flex-col lg:flex-row gap-8">
+                            <aside className="lg:w-1/4">
+                                <div className="sticky top-4">
+                                    <Filters
+                                        onPriceChange={handlePriceChange}
+                                        onAvailabilityChange={handleAvailabilityChange}
+                                        onSortChange={handleSortChange}
+                                        minPrice={0}
+                                        maxPrice={1000}
+                                    />
+                                </div>
+                            </aside>
+
+                            <div className="lg:w-3/4">
+                                <ProductList
+                                    products={currentProducts}
+                                    currentPage={currentPage}
+                                    totalPages={totalPages}
+                                    totalProducts={sortedProducts.length}
+                                    onPageChange={setCurrentPage}
+                                />
+                            </div>
+                        </div>
+                    </main>
                 </div>
-            </main>
-        </div>
+            } />
+
+            <Route path="/product/:id" element={
+                <ProductDetails
+                    cartCount={cartCount}
+                    onSearch={handleSearch}
+                    onAddToCart={handleAddToCart}
+                />
+            } />
+        </Routes>
     );
 }
 
